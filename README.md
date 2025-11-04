@@ -1,6 +1,6 @@
 # Structural Calibration and Sigma Distribution of Even Perfect Numbers
 
-This repository contains the reference implementation that goes with the paper **“Structural Calibration and Sigma Distribution of Even Perfect Numbers”**. The code shows how to detect even perfect numbers **without calling a Mersenne-prime test**, by enforcing the structural constraints of the **sigma rectangle (SR)** and the **dyadic hierarchical tiling (DHT)** on triangular numbers.
+This repository contains the reference implementation that goes with the paper **“Structural Calibration and Sigma Distribution of Even Perfect Numbers”**. The code shows how to detect even perfect numbers **without calling a separate Mersenne-prime routine**, by enforcing the structural constraints of the **sigma rectangle (SR)** and the **dyadic hierarchical tiling (DHT)** on triangular numbers. This approach is **conditioned on the classical Euclid–Euler characterization** of even perfect numbers.
 
 ---
 
@@ -43,7 +43,7 @@ This repository contains the reference implementation that goes with the paper *
   \]
   The code can evaluate this to confirm the certification numerically.
 
-**Result:** whenever a triangular number passes these structural tests, the algorithm records it as an even perfect number — and it does so without using Mersenne primality.
+**Result:** under the Euclid–Euler characterization, whenever a triangular number passes these structural tests, the algorithm records it as an even perfect number — and it does so without using a dedicated Mersenne-primality subroutine.
 
 ---
 

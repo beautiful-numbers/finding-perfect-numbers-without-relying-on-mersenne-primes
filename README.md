@@ -1,62 +1,88 @@
-# Perfect Numbers via the σ-Rectangle *(ex “beautiful numbers”; historical label only, no distinct class)*
+# Structural Calibration and Sigma Distribution of Even Perfect Numbers
 
-## Overview
-This project presents a **new algorithm** for identifying perfect numbers using the **sigma-rectangle (SR)** built from triangular numbers. The algorithm **starts by enumerating triangular numbers** $T_k=\frac{k(k+1)}{2}$ and, for each $k$, tests the SR pattern on the $k\times(k+1)$ rectangle with parameters $k$ and $L=\frac{k+1}{2}$ (with $\gcd(k,L)=1$). The SR framework distinguishes the **SR median** from the **middle column** and uses the divisor pairing $d\mapsto M/d$ within the rectangle to validate $\sigma(M)=2M$. Crucially, this method **does not rely on Mersenne primes**; it couples divisibility with the SR structural constraints to efficiently and incrementally reveal perfect numbers. *(Formerly called “beautiful numbers”; this was only a working label and does not denote a different class of integers.)*
+This repository contains the reference implementation that goes with the paper **“Structural Calibration and Sigma Distribution of Even Perfect Numbers”**. The code shows how to detect even perfect numbers **without calling a Mersenne-prime test**, by enforcing the structural constraints of the **sigma rectangle (SR)** and the **dyadic hierarchical tiling (DHT)** on triangular numbers.
 
+---
 
-## Concept and Structure
+## 1. What it does
 
-### 1. Triangular Numbers and Sigma Rectangle
-The foundation of this algorithm is the **triangular number** \( T \), calculated as the sum \( T = 1 + 2 + 3 + ... + n \), where **side length** \( n \) represents the last integer in the sequence. This triangle is aligned along the x-axis, with one vertex at the origin \(0, 0\).
+- Enumerates **triangular numbers**  
+  For odd \(n\), we form
+  \[
+  T_n = \frac{n(n+1)}{2}, \qquad L = \frac{n+1}{2}, \qquad k = n,
+  \]
+  and we view \(M = T_n\) as a candidate.
 
-To analyze and validate the properties of a triangular number, we mirror the triangular shape to form a **sigma rectangle** \( R \) by combining two triangles of length \( T \) (i.e., \( T + T = R \)). This rectangle provides a structured framework to verify if a triangular number is perfect by examining both its geometric and divisional properties.
+- Enforces the **even SR structure**  
+  In the even perfect case the wide pillar is dyadic, so we require
+  \[
+  L = 2^a.
+  \]
+  This is the SR/DHT version of the Euclid–Euler shape.
 
-### 2. Incremental Filtering and Section Creation
-- **Incremental Verification:** We apply filters to eliminate numbers that don’t meet the criteria, focusing computational resources only on promising candidates.
-- **Columns and Rows in the Sigma Rectangle:** The rectangle’s structure is derived from the triangle’s side length. The **rows** are equal to the side length plus 1 (to account for vertical alignment), while half of the x-axis represents the **median length** of the triangle.
-- **Sections in the Rectangle:** Each section within the sigma rectangle is incrementally validated based on rows and columns:
-  - The **columns** of the first section are calculated as \( \text{median length} / \text{first divisor} \).
-  - The **rows** of the first section are set to the triangle’s side length minus 1.
-  - Each subsequent section is refined step-by-step, based on the remaining length, to build up the divisor properties until the last columns are reached.
+- Checks the **median identity**  
+  The sigma rectangle has a median column at \(L/2\), and the small divisors below \(L\) must be exactly the dyadic ones \(\{1,2,4,\dots,L/2\}\). They satisfy
+  \[
+  (1 + 2 + \dots + L/2) + L = k,
+  \]
+  which forces
+  \[
+  k = 2L - 1
+  \]
+  and therefore
+  \[
+  M = L(2L-1) = 2^a(2^{a+1}-1).
+  \]
 
-### 3. Divisors Before and After the Median
-- **Incremental Divisor Validation:** Divisors are calculated only after each section is created, to avoid unnecessary computations. The number of dots in each section is checked against the divisors before the median, proceeding one section at a time until only two columns remain.
-- **Final Check with Divisors After Median:** The last column in the rectangle, located at the midpoint, serves as a symmetry point for verifying divisors after the median, ensuring the number's perfection according to the sigma properties.
+- Optionally checks the **calibration equality** from the paper  
+  For even perfect numbers we have an exact formula for the largest proper divisor:
+  \[
+  R(L) = \frac{L(L+2)}{8}, \qquad
+  \Theta(L) = 8 - \frac{20}{L+2}, \qquad
+  GD(M) = \Theta(L)\,R(L).
+  \]
+  The code can evaluate this to confirm the certification numerically.
 
-## Key Features of the Algorithm
-- **New Geometric Pattern:** This algorithm is based on a newly identified geometric pattern in triangular numbers that aids in identifying perfect numbers more efficiently.
-- **Redefined Perfect Numbers:** Beautiful triangular numbers redefine perfect numbers by combining divisibility with structural geometry, aiming to uncover all perfect numbers through an incremental approach.
-- **Median Length as a Symmetry Reference:** The sum of all divisors is used as a median reference, ensuring symmetry within the sigma rectangle.
-- **Efficient, Step-by-Step Divisor Verification:** Divisors are computed only as needed, minimizing unnecessary calculations and providing a streamlined method for identifying perfect numbers.
+**Result:** whenever a triangular number passes these structural tests, the algorithm records it as an even perfect number — and it does so without using Mersenne primality.
 
-## Project Goals
-This project redefines the concept of perfect numbers by:
-1. Using beautiful triangular numbers as an incremental framework to identify all perfect numbers.
-2. Leveraging geometric symmetry and divisibility to create a structured, computationally efficient verification process.
-3. Ensuring that each candidate number meets stringent criteria through a layered, section-based approach within the sigma rectangle.
+---
 
-## Usage and Application
+## 2. Why this is interesting
 
-### Running the Code
-This repository includes Python scripts to:
-- Efficiently generate and filter triangular numbers.
-- Construct sigma rectangles and verify each section incrementally.
-- Perform divisor checks to confirm conformity with the criteria for beautiful triangular numbers, aiding in the discovery of perfect numbers.
+Classically, even perfect numbers are obtained from Mersenne primes. The paper shows that in the even case the SR/DHT structure is strong enough to **reconstruct the Euclid–Euler form from local divisor geometry** (dyadic columns + median + calibration). The repo is the concrete version of that statement.
 
-### Important Notes
-1. **Range Adjustment**: The variable `limit_T` determines the range of numbers tested. By default, `limit_T = 34000000` is set to identify the first 5 beautiful triangular numbers. Users can adjust `limit_T` as needed.
-   
-2. **Drawing the Structure**: The code includes optional drawing functions to visualize the structure of beautiful triangular numbers. By default, these drawing lines are **commented out** to optimize performance. To view the geometric structure, simply **uncomment** the relevant lines in the code.
+This repo corresponds to the “algorithm detection and enumeration” section of the paper:
+1. extract an SR base \((k,L)\);
+2. check DHT (dyadic pillar, median, signature);
+3. check calibration;
+4. rule out intruders by the local step formula.
 
-3. **Performance Optimization**: This code currently runs on a CPU. A version optimized for GPU computation is under development and will be released in a future update.
+---
 
-4. **Note on the Inclusion of the Number 6**
+## 3. How to run
 
-One interesting exception in the results of this algorithm is the number 6. Although the algorithm identifies 6 as a "beautiful triangular number," it does not strictly align with the geometric and divisor-based structure expected of such numbers. The inclusion of 6 occurs because:
+- open the main Python script in this repo;
+- set the scan limit (for instance on \(n\) or on the triangular value);
+- run: the script will print the even perfect numbers it finds in order (6, 28, 496, 8128, …).
 
-- Semiprime Structure: As the product of two primes, 6=2×3, 6 satisfies the initial divisibility checks without requiring additional sections in the sigma rectangle structure.
-- Triangular Properties: 6 is a triangular number that also happens to be the smallest perfect number, as 6=1+2+3. These properties allow 6 to meet the initial checks set by the algorithm, even though it bypasses the layered structure needed for larger beautiful triangular numbers.
+You can increase the limit to reach the larger known even perfect numbers. The structural tests stay simple because they only look at divisors **below \(L\)** and at one explicit formula for the largest divisor.
 
-This behavior is not a bug but rather an artifact of 6’s simplicity. Its inclusion provides insight into the algorithm's behavior with small numbers and highlights the unique mathematical characteristics of 6.
+---
 
-This project not only redefines perfect numbers through beautiful triangular structures but also opens a pathway for further exploration of efficient, incremental methods in number theory.
+## 4. Notes
+
+- **6 is accepted**: it is triangular and perfect, so it passes the structural filter even though it is a degenerate case.
+- **No new integer class**: the old working label “beautiful numbers” referred to “numbers that pass the SR filter”. In this repo we keep the classical name: these are **even perfect numbers**.
+- **CPU-friendly**: all tests are local and integer-based. A faster version (vectorized / GPU) is possible because the SR checks are independent between candidates.
+
+---
+
+## 5. Reference
+
+If you use this code, please cite the paper:
+
+> Daniel Sautot, *Structural Calibration and Sigma Distribution of Even Perfect Numbers*, 2025.
+
+and the earlier SR/DHT description:
+
+> Daniel Sautot, *The Sigma Rectangle Framework and a Certified Descent Approach to Odd Perfect Numbers*, Zenodo, 2025, doi:10.5281/zenodo.17383511.

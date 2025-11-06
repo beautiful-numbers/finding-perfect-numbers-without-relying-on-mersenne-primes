@@ -212,6 +212,15 @@ def find_beautiful_triangular_numbers(limit_T):
                 last_reported_percentage = int(progress_percentage)
             continue
 
+        # if not calibration_passes(T, median_length):
+        #     # ne respecte pas la calibration finale du papier
+        #     progress_percentage = (n / limit_n) * 100
+        #     if int(progress_percentage) >= last_reported_percentage + 1:
+        #         elapsed_time = time.time() - start_time
+        #         print(f"Progress: {int(progress_percentage)}% | Elapsed time: {elapsed_time:.2f}s", end='\r', flush=True)
+        #         last_reported_percentage = int(progress_percentage)
+        #     continue
+
         data = {
             "Triangular Number": T,
             "Side Length (n)": n_check,
@@ -246,6 +255,25 @@ def find_beautiful_triangular_numbers(limit_T):
         print()
     return beautiful_triangles
 
+def calibration_passes(T, median_length):
+    """
+    Vérifie la condition de calibration du papier :
+    GD(T) doit être égal à Theta(L) * R(L)
+    avec L = median_length.
+    Ici on prend GD(T) = T // 2 puisque le SR prouve que c'est le plus grand diviseur propre.
+    """
+    L = median_length
+    GD = T // 2  # plus grand diviseur propre attendu
+
+    R = L * (L + 2) / 8
+    Theta = 8 - 20 / (L + 2)
+
+    expected = Theta * R
+
+    # petite tolérance flottante
+    return abs(GD - expected) < 1e-9
+
+
 if __name__ == "__main__":
     # Set the desired limit_T
     limit_T = 34000000  # Adjust as needed, e.g., 1000000 for testing
@@ -255,3 +283,4 @@ if __name__ == "__main__":
     beautiful_triangles = find_beautiful_triangular_numbers(limit_T)
     execution_time = time.time() - start_time
     print(f"Execution time: {execution_time:.2f} seconds")
+
